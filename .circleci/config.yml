@@ -7,16 +7,10 @@ jobs:
   win:
     executor: win/default
     steps:
-      - checkout
       - run: Write-Host "Hello, World!"
   linux:
     docker:
       - image: circleci/rust:1.40.0
-    steps:
-      - run: echo "Hello, World!"
-  macos:
-    macos:
-      xcode: "11.0.0"
     steps:
       - run: echo "Hello, World!"
 
@@ -32,9 +26,7 @@ workflows:
     jobs:
       - win
       - linux
-      - macos
       - release:
           requires:
             - win
             - linux
-            - macos
