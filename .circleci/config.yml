@@ -27,12 +27,13 @@ jobs:
     executor: win/default
     steps:
       - checkout
-
       - restore_cache:
           key: v1-windows-rustup
       - run:
           name: Install rustup
-          command: choco install rustup
+          command: |
+            choco install rustup --pre
+            rustup-init
       - save_cache:
           key: v1-windows-rustup
           paths:
