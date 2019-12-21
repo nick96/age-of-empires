@@ -1,0 +1,40 @@
+version: 2.1
+
+orbs:
+  win: circleci/windows@2.2.0
+
+jobs:
+  win:
+    executor: win/default
+    steps:
+      - checkout
+      - run: Write-Host "Hello, World!"
+  linux:
+    docker:
+      - image: circleci/rust:1.40.0
+    steps:
+      - run: echo "Hello, World!"
+  macos:
+    macos:
+      xcode: "11.0.0"
+    steps:
+      - run: echo "Hello, World!"
+
+  release:
+    docker:
+      - image: buildpack-deps:trusty
+    steps:
+      - run: echo "TODO"
+
+workflows:
+  version: 2
+  build-release:
+    jobs:
+      - win
+      - linux
+      - macos
+      - release:
+          requires:
+            - win
+            - linux
+            - macos
