@@ -4,28 +4,84 @@ orbs:
   win: circleci/windows@2.2.0
 
 jobs:
+  qa:
+    docker:
+      - image: circleci/rust:1.40.0
+    steps:
+      - checkout
+      - run:
+          name: Check formatting
+          command: |
+            rustfmt --version
+            rustup run stable cargo fmt --write-mode=diff
+      - run:
+          name: Clippy
+          command: |
+            rustup run stable cargo clippy --all-targets --features vulkan -- D warnings
+
   win:
     executor: win/default
     steps:
-      - run: Write-Host "Hello, World!"
+      - checkout
+
+      - restore_cache:
+          key: v1-windows-rustup
+      - run:
+          name: Install rustup
+          command: choco install rustup
+      - save_cache:
+          key: v1-windows-rustup
+          paths:
+            - "C:/ProgramData/Chocolatey"
+
+      - restore_cache:
+          key: v1-windows-deps-{{ checksum "Cargo.lock" }}
+      - run:
+          name: Build
+          command: rustup run stable cargo build --features vulkan
+      - run:
+          name: Test
+          command: rustup run stable cargo test
+      - save_cache:
+          key: v1-windows-deps-{{ checksum "Cargo.lock" }}
+          paths:
+            - "~/.cargo"
+
   linux:
     docker:
       - image: circleci/rust:1.40.0
     steps:
-      - run: echo "Hello, World!"
+      - checkout
 
   release:
     docker:
       - image: buildpack-deps:trusty
     steps:
-      - run: echo "TODO"
+      - checkout
+      - restore_cache:
+          key: v1-linux-cargo-deps-{{ checksum "Cargo.lock" }}
+      - run:
+          name: Build
+          command: rustup run stable cargo build --features vulkan
+      - run:
+          name: Test
+          command: rustup run stable cargo test
+      -  save_cache:
+          key: v1-linux-cargo-deps-{{ checksum "Cargo.lock" }}
+          paths:
+            - "~/.cargo"
 
 workflows:
   version: 2
   build-release:
     jobs:
-      - win
-      - linux
+      - qa
+      - win:
+          requires:
+            - qa
+      - linux:
+          requires:
+            - qa
       - release:
           requires:
             - win
