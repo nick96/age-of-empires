@@ -33,7 +33,7 @@ jobs:
           name: Install rustup
           command: |
             choco install rustup --pre
-            rustup-init
+            C:/ProgramData/Chocolatey/lib/rustup/rustup-init.exe -y --default-toolchain stable
       - save_cache:
           key: v1-windows-rustup
           paths:
