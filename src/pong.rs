@@ -11,9 +11,13 @@ pub struct Pong;
 impl SimpleState for Pong {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let world = data.world;
-        init_camera(world);
+
+        let sprite_sheet_handle = load_sprite_sheet(world);
+
         world.register::<Paddle>();
-        init_paddles(world);
+
+        init_paddles(world, sprite_sheet_handle);
+        init_camera(world);
     }
 }
 
@@ -53,7 +57,7 @@ impl Component for Paddle {
     type Storage = DenseVecStorage<Self>;
 }
 
-pub fn init_paddles(world: &mut World) {
+pub fn init_paddles(world: &mut World, sprite_sheet: Handle<SpriteSheet>) {
     let mut left_transf = Transform::default();
     let mut right_transf = Transform::default();
     let y = ARENA_HEIGHT / 2.0;
@@ -61,14 +65,43 @@ pub fn init_paddles(world: &mut World) {
     left_transf.set_translation_xyz(PADDLE_WIDTH * 0.5, y, 0.0);
     right_transf.set_translation_xyz(ARENA_WIDTH - PADDLE_WIDTH * 0.5, y, 0.0);
 
+    let sprite_render = SpriteRender {
+        sprite_sheet: sprite_sheet.clone(),
+        sprite_number: 0,
+    };
+
     world
         .create_entity()
+        .with(sprite_render.clone())
         .with(Paddle::new(Side::Left))
         .with(left_transf)
         .build();
     world
         .create_entity()
+        .with(sprite_render.clone())
         .with(Paddle::new(Side::Right))
         .with(right_transf)
         .build();
+}
+
+fn load_sprite_sheet(world: &mut World) -> Handle<SpriteSheet> {
+    let texture_handle = {
+        let ldr = world.read_resource::<Loader>();
+        let store = world.read_resource::<AssetStorage<Texture>>();
+        ldr.load(
+            "texture/pong_spritesheet.png",
+            ImageFormat::default(),
+            (),
+            &store,
+        )
+    };
+
+    let ldr = world.read_resource::<Loader>();
+    let store = world.read_resource::<AssetStorage<SpriteSheet>>();
+    ldr.load(
+        "texture/pong_spritesheet.ron",
+        SpriteSheetFormat(texture_handle),
+        (),
+        &store,
+    )
 }
