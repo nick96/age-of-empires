@@ -1,5 +1,13 @@
-use amethyst::ecs::prelude::{Component, DenseVecStorage};
-use amethyst::{core::transform::Transform, prelude::*, renderer::Camera};
+use amethyst::{
+    assets::{AssetStorage, Handle, Loader},
+    core::transform::Transform,
+    ecs::prelude::{Component, DenseVecStorage},
+    prelude::*,
+    renderer::{
+        formats::texture::ImageFormat, Camera, SpriteRender, SpriteSheet, SpriteSheetFormat,
+        Texture,
+    },
+};
 
 pub const PADDLE_HEIGHT: f32 = 16.0;
 pub const PADDLE_WIDTH: f32 = 4.0;
