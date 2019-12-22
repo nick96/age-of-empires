@@ -1,11 +1,13 @@
+use crate::pong::{Paddle, Side, ARENA_HEIGHT, PADDLE_HEIGHT};
+
 use amethyst::{
-    core::Transform,
+    core::{SystemDesc, Transform},
+    derive::SystemDesc,
     ecs::{Join, Read, ReadStorage, System, SystemData, World, WriteStorage},
     input::{InputHandler, StringBindings},
 };
 
-use crate::pong::{Paddle, Side, ARENA_HEIGHT, PADDLE_HEIGHT};
-
+#[derive(SystemDesc)]
 pub struct PaddleSystem;
 
 impl<'s> System<'s> for PaddleSystem {
@@ -15,5 +17,16 @@ impl<'s> System<'s> for PaddleSystem {
         Read<'s, InputHandler<StringBindings>>,
     );
 
-    fn run(&mut self, (mut transforms, paddles, input): Self::SystemData) {}
+    fn run(&mut self, (mut transforms, paddles, input): Self::SystemData) {
+        for (paddle, transform) in (&paddles, &mut transforms).join() {
+            let movement = match paddle.side {
+                Side::Left => input.axis_value("left_paddle"),
+                Side::Right => input.axis_value("right_paddle"),
+            };
+            if let Some(move_amount) = movement {
+                let scaled_amount = 1.2 * move_amount as f32;
+                transform.prepend_translation_y(scaled_amount);
+            }
+        }
+    }
 }
