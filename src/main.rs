@@ -1,6 +1,7 @@
+mod pong;
+
 use amethyst::{
     core::transform::TransformBundle,
-    // ecs::prelude::{ReadExpect, Resources, SystemData},
     prelude::*,
     renderer::{
         plugins::{RenderFlat2D, RenderToWindow},
@@ -10,11 +11,7 @@ use amethyst::{
     utils::application_root_dir,
 };
 
-struct MyState;
-
-impl SimpleState for MyState {
-    fn on_start(&mut self, _data: StateData<'_, GameData<'_, '_>>) {}
-}
+use crate::pong::Pong;
 
 fn main() -> amethyst::Result<()> {
     amethyst::start_logger(Default::default());
@@ -35,7 +32,8 @@ fn main() -> amethyst::Result<()> {
         )?
         .with_bundle(TransformBundle::new())?;
 
-    let mut game = Application::new("/", MyState, game_data)?;
+    let assets_dir = app_root.join("assets");
+    let mut game = Application::new(assets_dir, Pong, game_data)?;
     game.run();
 
     Ok(())
